@@ -44,7 +44,7 @@ const App: FC<AppProps> = ({ history, context }) => {
 			});
 			dispatch(CLEAN_NOTIFICATION());
 		}
-	}, [state.message, state.type]);
+	}, [state.message, state.type, dispatch]);
 
 	return (
 		<ConnectedRouter history={history} context={context}>

@@ -60,6 +60,7 @@ const Sidebar = (props: any) => {
 										</li>
 									);
 								}
+								return null;
 							}
 						})}
 					</Nav>

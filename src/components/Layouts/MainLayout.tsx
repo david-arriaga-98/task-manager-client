@@ -76,6 +76,7 @@ const MainLayout = (props: any) => {
 									/>
 								);
 							}
+							return null;
 						}
 					})}
 				</div>

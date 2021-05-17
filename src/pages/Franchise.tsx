@@ -39,6 +39,7 @@ export const FranchiseTable: FC<franchiseTableProps> = ({ select, action }) => {
 
 	useEffect(() => {
 		getFranchises();
+		// eslint-disable-next-line
 	}, [dataState.loadData]);
 
 	const getFranchises = async () => {

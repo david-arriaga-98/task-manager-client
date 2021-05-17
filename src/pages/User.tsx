@@ -39,6 +39,7 @@ const User = () => {
 
 	useEffect(() => {
 		getUsers();
+		// eslint-disable-next-line
 	}, [dataState.loadData]);
 
 	const {

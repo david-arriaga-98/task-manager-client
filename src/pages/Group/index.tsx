@@ -2,7 +2,6 @@ import { FC, useEffect, useState } from 'react';
 import {
 	Card,
 	CardBody,
-	CardTitle,
 	Row,
 	Col,
 	Button,
@@ -13,8 +12,7 @@ import {
 	ModalFooter,
 	Input,
 	Label,
-	FormGroup,
-	CardFooter
+	FormGroup
 } from 'reactstrap';
 import { useForm } from 'react-hook-form';
 import { ICreateGroup, IGetGroup } from '../../models/Group';
@@ -45,6 +43,7 @@ const Group = () => {
 
 	useEffect(() => {
 		getGroups();
+		// eslint-disable-next-line
 	}, [dataState.loadData]);
 
 	const getGroups = async () => {
