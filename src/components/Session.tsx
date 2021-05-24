@@ -31,7 +31,7 @@ const Session: FC<SessionProps> = (props) => {
 	) : props.type === 'dontNeedSession' ? (
 		<Route
 			render={(prop) =>
-				applicationState ? <Redirect to="/" /> : <Component {...prop} />
+				applicationState ? <Redirect to="/groups" /> : <Component {...prop} />
 			}
 		/>
 	) : (

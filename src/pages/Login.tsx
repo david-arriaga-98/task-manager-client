@@ -39,7 +39,7 @@ const Login = () => {
 			);
 			dispatch(SUCCESS_LOGIN({ userData: data }));
 			encryptData(data);
-			dispatch(push('/dashboard'));
+			dispatch(push('/'));
 
 			return;
 		} catch (error) {

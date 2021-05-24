@@ -39,27 +39,30 @@ const Sidebar = (props: any) => {
 									prop.scope === state.userData?.role ||
 									prop.scope === 'ALL'
 								) {
-									return (
-										<li
-											className={
-												activeRoute(prop.path) +
-												(prop.pro ? ' active active-pro' : '') +
-												' sidebar-item'
-											}
-											key={key}
-										>
-											<span
-												onClick={() => {
-													dispatch(push(prop.path));
-												}}
-												className="sidebar-link"
+									if (prop.map) {
+										return (
+											<li
+												className={
+													activeRoute(prop.path) +
+													(prop.pro ? ' active active-pro' : '') +
+													' sidebar-item'
+												}
+												key={key}
 											>
-												<i className={prop.icon} />
-												<span className="hide-menu">{prop.name}</span>
-											</span>
-										</li>
-									);
+												<span
+													onClick={() => {
+														dispatch(push(prop.path));
+													}}
+													className="sidebar-link"
+												>
+													<i className={prop.icon} />
+													<span className="hide-menu">{prop.name}</span>
+												</span>
+											</li>
+										);
+									}
 								}
+
 								return null;
 							}
 						})}

@@ -30,7 +30,6 @@ export const currentUser = () => {
 					const actualDate: number = getUnixTime(new Date());
 
 					if (parseInt(lsx) - actualDate > 1) {
-						console.log(parseInt(lsx) - actualDate);
 						return myUser;
 					}
 				}

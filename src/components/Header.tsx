@@ -12,10 +12,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import profilephoto from '../assets/images/users/1.jpg';
 
-import logodarkicon from '../assets/images/logo-icon.png';
-import logolighticon from '../assets/images/logo-light-icon.png';
-import logodarktext from '../assets/images/logo-text.png';
-import logolighttext from '../assets/images/logo-light-text.png';
+import Logo from '../assets/images/task.png';
+
 import { IApplicationState } from '../store/ducks';
 import { IUserState } from '../store/ducks/user.duck';
 import { LOG_OUT } from '../store/ducks/user.duck';
@@ -43,15 +41,12 @@ const Header = () => {
 		<header className="topbar navbarbg" data-navbarbg="skin1">
 			<Navbar className="top-navbar" color="info" dark expand="md">
 				<div className="navbar-header" id="logobg" data-logobg="skin6">
-					<NavbarBrand href="/dashboard">
-						<b className="logo-icon">
-							<img src={logodarkicon} alt="homepage" className="dark-logo" />
-							<img src={logolighticon} alt="homepage" className="light-logo" />
+					<NavbarBrand href="/">
+						<b>
+							<img src={Logo} width="50" alt="Task manager" />
 						</b>
-						<span className="logo-text">
-							<img src={logodarktext} alt="homepage" className="dark-logo" />
-							<img src={logolighttext} className="light-logo" alt="homepage" />
-						</span>
+
+						<span className="logo-text text-dark ml-3">Task Manager</span>
 					</NavbarBrand>
 					<button
 						className="btn-link nav-toggler d-block d-md-none"

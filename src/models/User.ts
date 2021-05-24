@@ -31,3 +31,7 @@ export interface IRegister {
 	password: string;
 	passwordConfirm: string;
 }
+
+export interface IGetUsersForFranchiseAndGroup extends IGetUser {
+	isJoinInGroup: number;
+}

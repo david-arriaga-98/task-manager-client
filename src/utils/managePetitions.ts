@@ -1,5 +1,5 @@
 import axios from './axios';
-import { Method } from 'axios';
+import { AxiosRequestConfig, Method } from 'axios';
 
 export interface ISuccessResponse<T> {
 	status: string;
@@ -17,14 +17,17 @@ export interface IErrorResponse {
 export const executeServerPetition = async <T, K>(
 	method: Method,
 	url: string,
-	params?: T
+	data?: T,
+	config?: AxiosRequestConfig
 ): Promise<ISuccessResponse<K>> => {
 	try {
-		const response = await axios.request({
+		const configuration: AxiosRequestConfig = {
+			...config,
 			method,
 			url,
-			data: params
-		});
+			data
+		};
+		const response = await axios.request(configuration);
 		return response.data as ISuccessResponse<K>;
 	} catch (error) {
 		throw error;

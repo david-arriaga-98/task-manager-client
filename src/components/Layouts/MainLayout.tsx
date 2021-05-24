@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Redirect, Route } from 'react-router';
+import { Route } from 'react-router';
 import Header from '../Header';
 import Sidebar from '../Sidebar';
 import ThemeRoutes from '../../routes/routing';
 import Footer from '../Footer';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { IApplicationState } from '../../store/ducks';
-import { IUserState } from '../../store/ducks/user.duck';
+import { push } from 'connected-react-router';
 
 const MainLayout = (props: any) => {
 	const [width, setWidth] = useState<number>(window.innerWidth);
 
-	const state = useSelector<IApplicationState, IUserState>(
-		(state) => state.user
+	const dispatch = useDispatch();
+	const state = useSelector<IApplicationState, IApplicationState>(
+		(state) => state
 	);
 
 	props.history.listen(() => {
@@ -49,6 +50,14 @@ const MainLayout = (props: any) => {
 		};
 	}, [width]);
 
+	useEffect(() => {
+		if (state.router.location.pathname === '/') {
+			state.user.userData?.role === 'ADMIN'
+				? dispatch(push('/users'))
+				: dispatch(push('/groups'));
+		}
+	}, [dispatch, state.router.location.pathname, state.user.userData?.role]);
+
 	return (
 		<div
 			id="main-wrapper"
@@ -64,20 +73,17 @@ const MainLayout = (props: any) => {
 			<div className="page-wrapper d-block">
 				<div className="page-content container-fluid">
 					{ThemeRoutes.map((prop, key) => {
-						if (prop.redirect) {
-							return <Redirect from={prop.path} to={prop.pathTo} key={key} />;
-						} else {
-							if (prop.scope === state.userData?.role || prop.scope === 'ALL') {
-								return (
-									<Route
-										path={prop.path}
-										component={prop.component}
-										key={key}
-									/>
-								);
-							}
-							return null;
+						if (prop.scope === state.user.userData?.role) {
+							return (
+								<Route
+									exact
+									path={prop.path}
+									component={prop.component}
+									key={key}
+								/>
+							);
 						}
+						return null;
 					})}
 				</div>
 				<Footer />

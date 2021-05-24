@@ -22,6 +22,8 @@ import { SHOW_NOTIFICATION } from '../../store/ducks/notification.duck';
 import { IApplicationState } from '../../store/ducks';
 import { IUserState } from '../../store/ducks/user.duck';
 import { format } from 'date-fns';
+import { push } from 'connected-react-router';
+import AddUserToGroup from './AddUserToGroup';
 
 const Group = () => {
 	const [groups, setGroups] = useState<IGetGroup[]>([]);
@@ -31,20 +33,24 @@ const Group = () => {
 		message: '',
 		loadData: true
 	});
-	const dispatch = useDispatch();
 
 	const state = useSelector<IApplicationState, IUserState>(
 		(state) => state.user
 	);
 
 	const [modal, setModal] = useState({
-		createGroupModal: false
+		createGroupModal: false,
+		addUserToGroup: false
 	});
+
+	const [groupSelected, setGroupSelected] = useState<number>(0);
+
+	const dispatch = useDispatch();
 
 	useEffect(() => {
 		getGroups();
 		// eslint-disable-next-line
-	}, [dataState.loadData]);
+	}, []);
 
 	const getGroups = async () => {
 		try {
@@ -75,6 +81,8 @@ const Group = () => {
 		}
 	};
 
+	const toggleAddUser = () =>
+		setModal({ ...modal, addUserToGroup: !modal.addUserToGroup });
 	const toggleCreate = () =>
 		setModal({ ...modal, createGroupModal: !modal.createGroupModal });
 
@@ -96,12 +104,22 @@ const Group = () => {
 								<CardBody>
 									<div className="feed-widget mb-3">
 										<ul className="list-style-none feed-body m-0 pb-3">
+											{data.ownerId === state.userData?.id ? (
+												<p className="text-info">Administrador</p>
+											) : (
+												<p className="text-success">Miembro</p>
+											)}
+
 											<li>
 												<h2>{data.name}</h2>
 											</li>
 
 											<li className="mt-4">
-												<p>{data.description.substr(0, 120) + '...'}</p>
+												<p>
+													{data.description.length > 50
+														? data.description.substr(0, 50) + ' ...'
+														: data.description}
+												</p>
 											</li>
 
 											<li className="d-flex justify-content-between mt-4">
@@ -117,17 +135,27 @@ const Group = () => {
 										</ul>
 									</div>
 									{data.ownerId === state.userData?.id ? (
-										<Button className="mr-2" color="info">
-											<i className="mdi mdi-pencil mr-1"></i>
-											Administrar
+										<Button
+											className="mr-2"
+											color="info"
+											onClick={() => {
+												setGroupSelected(data.id);
+												toggleAddUser();
+											}}
+										>
+											<i className="mdi mdi-plus mr-1"></i>
+											Agregar Usuarios
 										</Button>
 									) : (
 										<></>
 									)}
 
-									<Button color="success">
+									<Button
+										color="success"
+										onClick={() => dispatch(push('/groups/' + data.id))}
+									>
 										<i className="mdi mdi-eye mr-1"></i>
-										Revisar
+										Ver grupo
 									</Button>
 								</CardBody>
 							</Card>
@@ -135,7 +163,16 @@ const Group = () => {
 					);
 				})}
 			</Row>
-			<CreateGroupModal action={toggleCreate} status={modal.createGroupModal} />
+			<AddUserToGroup
+				groupId={groupSelected}
+				modal={modal.addUserToGroup}
+				toggle={toggleAddUser}
+			/>
+			<CreateGroupModal
+				action={toggleCreate}
+				status={modal.createGroupModal}
+				reload={getGroups}
+			/>
 		</>
 	);
 };
@@ -143,13 +180,19 @@ const Group = () => {
 type createGroupModalProps = {
 	status: boolean;
 	action: any;
+	reload: any;
 };
 
-const CreateGroupModal: FC<createGroupModalProps> = ({ status, action }) => {
+const CreateGroupModal: FC<createGroupModalProps> = ({
+	status,
+	action,
+	reload
+}) => {
 	const {
 		handleSubmit,
 		register,
-		formState: { errors }
+		formState: { errors },
+		reset
 	} = useForm();
 
 	const [dataState, setDataState] = useState({
@@ -176,8 +219,9 @@ const CreateGroupModal: FC<createGroupModalProps> = ({ status, action }) => {
 				...dataState,
 				isCharging: true
 			});
-			// reloadData();
+			reload();
 			action();
+			reset();
 			dispatch(
 				SHOW_NOTIFICATION({
 					message: message,
@@ -204,7 +248,7 @@ const CreateGroupModal: FC<createGroupModalProps> = ({ status, action }) => {
 				<ModalHeader toggle={action}>Crear un grupo</ModalHeader>
 				<ModalBody>
 					<FormGroup>
-						<Label for="name">Nombre del grupo</Label>
+						<Label for="name">Nombre</Label>
 						<Input
 							type="text"
 							id="name"
@@ -232,7 +276,7 @@ const CreateGroupModal: FC<createGroupModalProps> = ({ status, action }) => {
 					</FormGroup>
 
 					<FormGroup>
-						<Label for="description">Descripción del grupo</Label>
+						<Label for="description">Descripción</Label>
 						<Input
 							type="textarea"
 							id="description"
