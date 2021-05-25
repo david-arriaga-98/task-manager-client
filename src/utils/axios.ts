@@ -2,7 +2,7 @@ import axios from 'axios';
 import { store } from '../index';
 
 const Axios = axios.create({
-	baseURL: 'https://taskmanager0999.herokuapp.com'
+	baseURL: 'http://localhost:3002'
 });
 
 Axios.interceptors.request.use((req) => {

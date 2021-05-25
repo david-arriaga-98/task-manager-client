@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import {
 	Card,
 	CardBody,
@@ -16,7 +16,10 @@ import {
 } from 'reactstrap';
 import { useForm } from 'react-hook-form';
 import { ICreateGroup, IGetGroup } from '../../models/Group';
-import { executeServerPetition } from '../../utils/managePetitions';
+import {
+	executeServerPetition,
+	ISuccessResponse
+} from '../../utils/managePetitions';
 import { useDispatch, useSelector } from 'react-redux';
 import { SHOW_NOTIFICATION } from '../../store/ducks/notification.duck';
 import { IApplicationState } from '../../store/ducks';
@@ -24,60 +27,47 @@ import { IUserState } from '../../store/ducks/user.duck';
 import { format } from 'date-fns';
 import { push } from 'connected-react-router';
 import AddUserToGroup from './AddUserToGroup';
+import useDataFetch from '../../Hooks/DataFetch';
+import Charging from '../../components/State/Charging';
+import Error from '../../components/State/Error';
+import Axios from '../../utils/axios';
 
 const Group = () => {
-	const [groups, setGroups] = useState<IGetGroup[]>([]);
-	const [dataState, setDataState] = useState({
-		isCharging: false,
-		isError: false,
-		message: '',
-		loadData: true
-	});
-
+	const { dataState, reload } = useDataFetch<IGetGroup[]>('/group/my');
 	const state = useSelector<IApplicationState, IUserState>(
 		(state) => state.user
 	);
-
+	const [groupSelected, setGroupSelected] = useState<number>(0);
 	const [modal, setModal] = useState({
 		createGroupModal: false,
 		addUserToGroup: false
 	});
-
-	const [groupSelected, setGroupSelected] = useState<number>(0);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const dispatch = useDispatch();
 
-	useEffect(() => {
-		getGroups();
-		// eslint-disable-next-line
-	}, []);
-
-	const getGroups = async () => {
+	const deleteGroup = async (groupId: number) => {
 		try {
-			setDataState({
-				...dataState,
-				isCharging: true
-			});
-			const { data } = await executeServerPetition<undefined, IGetGroup[]>(
-				'GET',
-				'/group/my'
+			setIsLoading(true);
+			const { data } = await Axios.delete<ISuccessResponse<null>>(
+				'/group/' + groupId
 			);
-			setDataState({
-				...dataState,
-				isCharging: false
-			});
-			setGroups(data);
-		} catch (error) {
+			setIsLoading(false);
+			reload();
 			dispatch(
 				SHOW_NOTIFICATION({
-					message: error.response.data.message,
-					type: 'error'
+					type: 'success',
+					message: data.message
 				})
 			);
-			setDataState({
-				...dataState,
-				isCharging: false
-			});
+		} catch (error) {
+			setIsLoading(false);
+			dispatch(
+				SHOW_NOTIFICATION({
+					type: 'error',
+					message: error.response.data.message
+				})
+			);
 		}
 	};
 
@@ -90,88 +80,119 @@ const Group = () => {
 		<>
 			<Row>
 				<Col>
-					<Button className="mb-4" color="info" onClick={toggleCreate}>
+					<Button
+						className="mb-4"
+						color="info"
+						disabled={isLoading}
+						onClick={toggleCreate}
+					>
 						<i className="mdi mdi-plus mr-1"></i>
 						Crear Grupo
 					</Button>
 				</Col>
 			</Row>
-			<Row>
-				{groups.map((data, key) => {
-					return (
-						<Col sm={6} lg={4} key={key}>
-							<Card>
-								<CardBody>
-									<div className="feed-widget mb-3">
-										<ul className="list-style-none feed-body m-0 pb-3">
+
+			{dataState.isLoading ? (
+				<Charging scope="grupos" />
+			) : dataState.isError || dataState.data === undefined ? (
+				<Error error="" />
+			) : dataState.data.length === 0 ? (
+				<Error error="No hay grupos que mostrar" />
+			) : (
+				<>
+					{dataState.data.map((data, key) => {
+						return (
+							<Row key={key}>
+								<Col sm={6} lg={4}>
+									<Card>
+										<CardBody>
+											<div className="feed-widget mb-3">
+												<ul className="list-style-none feed-body m-0 pb-3">
+													<li className="d-flex justify-content-between">
+														{data.ownerId === state.userData?.id ? (
+															<>
+																<p className="text-info">Administrador</p>
+																<Button
+																	disabled={isLoading}
+																	color="danger"
+																	onClick={() => deleteGroup(data.id)}
+																>
+																	<i className="fa fa-trash mr-2"></i>
+																	Eliminar
+																</Button>
+															</>
+														) : (
+															<p className="text-success">Miembro</p>
+														)}
+													</li>
+
+													<li>
+														<h2>{data.name}</h2>
+													</li>
+
+													<li className="mt-4">
+														<p>
+															{data.description.length > 50
+																? data.description.substr(0, 50) + ' ...'
+																: data.description}
+														</p>
+													</li>
+
+													<li className="d-flex justify-content-between mt-4">
+														<span className="font-12 text-muted">
+															<i className="mdi mdi-account mr-1"></i>
+															{data.ownerName}
+														</span>
+														<span className="font-12 text-muted">
+															<i className="mdi mdi-timer mr-1"></i>
+															{format(new Date(data.createdAt), 'dd-MM-yyyy')}
+														</span>
+													</li>
+												</ul>
+											</div>
 											{data.ownerId === state.userData?.id ? (
-												<p className="text-info">Administrador</p>
+												<Button
+													disabled={isLoading}
+													className="mr-2"
+													color="info"
+													onClick={() => {
+														setGroupSelected(data.id);
+														toggleAddUser();
+													}}
+												>
+													<i className="mdi mdi-plus mr-1"></i>
+													Agregar Usuarios
+												</Button>
 											) : (
-												<p className="text-success">Miembro</p>
+												<></>
 											)}
 
-											<li>
-												<h2>{data.name}</h2>
-											</li>
+											<Button
+												disabled={isLoading}
+												color="success"
+												onClick={() => dispatch(push('/groups/' + data.id))}
+											>
+												<i className="mdi mdi-eye mr-1"></i>
+												Ver grupo
+											</Button>
+										</CardBody>
+									</Card>
+								</Col>
+							</Row>
+						);
+					})}
+				</>
+			)}
 
-											<li className="mt-4">
-												<p>
-													{data.description.length > 50
-														? data.description.substr(0, 50) + ' ...'
-														: data.description}
-												</p>
-											</li>
-
-											<li className="d-flex justify-content-between mt-4">
-												<span className="font-12 text-muted">
-													<i className="mdi mdi-account mr-1"></i>
-													{data.ownerName}
-												</span>
-												<span className="font-12 text-muted">
-													<i className="mdi mdi-timer mr-1"></i>
-													{format(new Date(data.createdAt), 'dd-MM-yyyy')}
-												</span>
-											</li>
-										</ul>
-									</div>
-									{data.ownerId === state.userData?.id ? (
-										<Button
-											className="mr-2"
-											color="info"
-											onClick={() => {
-												setGroupSelected(data.id);
-												toggleAddUser();
-											}}
-										>
-											<i className="mdi mdi-plus mr-1"></i>
-											Agregar Usuarios
-										</Button>
-									) : (
-										<></>
-									)}
-
-									<Button
-										color="success"
-										onClick={() => dispatch(push('/groups/' + data.id))}
-									>
-										<i className="mdi mdi-eye mr-1"></i>
-										Ver grupo
-									</Button>
-								</CardBody>
-							</Card>
-						</Col>
-					);
-				})}
-			</Row>
+			<CreateGroupModal
+				action={toggleCreate}
+				status={modal.createGroupModal}
+				reload={reload}
+			/>
 			<AddUserToGroup
 				groupId={groupSelected}
 				modal={modal.addUserToGroup}
 				toggle={toggleAddUser}
-			/>
-			<CreateGroupModal
-				action={toggleCreate}
-				status={modal.createGroupModal}
-				reload={getGroups}
 			/>
 		</>
 	);
@@ -179,8 +200,8 @@ const Group = () => {
 
 type createGroupModalProps = {
 	status: boolean;
-	action: any;
-	reload: any;
+	action: () => void;
+	reload: () => void;
 };
 
 const CreateGroupModal: FC<createGroupModalProps> = ({
@@ -195,30 +216,19 @@ const CreateGroupModal: FC<createGroupModalProps> = ({
 		reset
 	} = useForm();
 
-	const [dataState, setDataState] = useState({
-		isCharging: false,
-		isError: false,
-		message: '',
-		loadData: true
-	});
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const dispatch = useDispatch();
 
 	const onSubmit = async (values: ICreateGroup) => {
 		try {
-			setDataState({
-				...dataState,
-				isCharging: true
-			});
+			setIsLoading(true);
 			const { message } = await executeServerPetition<ICreateGroup, null>(
 				'POST',
 				'/group',
 				values
 			);
-			setDataState({
-				...dataState,
-				isCharging: true
-			});
+			setIsLoading(false);
 			reload();
 			action();
 			reset();
@@ -229,16 +239,13 @@ const CreateGroupModal: FC<createGroupModalProps> = ({
 				})
 			);
 		} catch (error) {
+			setIsLoading(false);
 			dispatch(
 				SHOW_NOTIFICATION({
 					message: error.response.data.message,
 					type: 'error'
 				})
 			);
-			setDataState({
-				...dataState,
-				isCharging: false
-			});
 		}
 	};
 
@@ -250,6 +257,7 @@ const CreateGroupModal: FC<createGroupModalProps> = ({
 					<FormGroup>
 						<Label for="name">Nombre</Label>
 						<Input
+							disabled={isLoading}
 							type="text"
 							id="name"
 							{...register('name', {
@@ -278,6 +286,7 @@ const CreateGroupModal: FC<createGroupModalProps> = ({
 					<FormGroup>
 						<Label for="description">Descripción</Label>
 						<Input
+							disabled={isLoading}
 							type="textarea"
 							id="description"
 							rows="3"
@@ -305,10 +314,15 @@ const CreateGroupModal: FC<createGroupModalProps> = ({
 					</FormGroup>
 				</ModalBody>
 				<ModalFooter>
-					<Button color="info" type="submit" size="md">
+					<Button disabled={isLoading} color="info" type="submit" size="md">
 						Crear grupo
 					</Button>
-					<Button color="danger" size="md" onClick={action}>
+					<Button
+						disabled={isLoading}
+						color="danger"
+						size="md"
+						onClick={action}
+					>
 						Cancelar
 					</Button>
 				</ModalFooter>

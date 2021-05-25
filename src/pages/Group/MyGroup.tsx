@@ -388,6 +388,21 @@ const MyGroup = () => {
 
 															<UncontrolledTooltip
 																placement="top"
+																target={'deleteTaskTooltip' + value.id}
+															>
+																Eliminar tarea
+															</UncontrolledTooltip>
+
+															<i
+																id={'deleteTaskTooltip' + value.id}
+																className="fa fa-trash text-danger mr-2"
+																style={{
+																	cursor: 'pointer'
+																}}
+															></i>
+
+															<UncontrolledTooltip
+																placement="top"
 																target={'showTaskInformationTooltip' + value.id}
 															>
 																Ver información de la tarea
