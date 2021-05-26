@@ -99,89 +99,87 @@ const Group = () => {
 			) : dataState.data.length === 0 ? (
 				<Error error="No hay grupos que mostrar" />
 			) : (
-				<>
+				<Row>
 					{dataState.data.map((data, key) => {
 						return (
-							<Row key={key}>
-								<Col sm={6} lg={4}>
-									<Card>
-										<CardBody>
-											<div className="feed-widget mb-3">
-												<ul className="list-style-none feed-body m-0 pb-3">
-													<li className="d-flex justify-content-between">
-														{data.ownerId === state.userData?.id ? (
-															<>
-																<p className="text-info">Administrador</p>
-																<Button
-																	disabled={isLoading}
-																	color="danger"
-																	onClick={() => deleteGroup(data.id)}
-																>
-																	<i className="fa fa-trash mr-2"></i>
-																	Eliminar
-																</Button>
-															</>
-														) : (
-															<p className="text-success">Miembro</p>
-														)}
-													</li>
+							<Col sm={6} lg={4} key={key}>
+								<Card>
+									<CardBody>
+										<div className="feed-widget mb-3">
+											<ul className="list-style-none feed-body m-0 pb-3">
+												<li className="d-flex justify-content-between">
+													{data.ownerId === state.userData?.id ? (
+														<>
+															<p className="text-info">Administrador</p>
+															<Button
+																disabled={isLoading}
+																color="danger"
+																onClick={() => deleteGroup(data.id)}
+															>
+																<i className="fa fa-trash mr-2"></i>
+																Eliminar
+															</Button>
+														</>
+													) : (
+														<p className="text-success">Miembro</p>
+													)}
+												</li>
 
-													<li>
-														<h2>{data.name}</h2>
-													</li>
+												<li>
+													<h2>{data.name}</h2>
+												</li>
 
-													<li className="mt-4">
-														<p>
-															{data.description.length > 50
-																? data.description.substr(0, 50) + ' ...'
-																: data.description}
-														</p>
-													</li>
+												<li className="mt-4">
+													<p>
+														{data.description.length > 50
+															? data.description.substr(0, 50) + ' ...'
+															: data.description}
+													</p>
+												</li>
 
-													<li className="d-flex justify-content-between mt-4">
-														<span className="font-12 text-muted">
-															<i className="mdi mdi-account mr-1"></i>
-															{data.ownerName}
-														</span>
-														<span className="font-12 text-muted">
-															<i className="mdi mdi-timer mr-1"></i>
-															{format(new Date(data.createdAt), 'dd-MM-yyyy')}
-														</span>
-													</li>
-												</ul>
-											</div>
-											{data.ownerId === state.userData?.id ? (
-												<Button
-													disabled={isLoading}
-													className="mr-2"
-													color="info"
-													onClick={() => {
-														setGroupSelected(data.id);
-														toggleAddUser();
-													}}
-												>
-													<i className="mdi mdi-plus mr-1"></i>
-													Agregar Usuarios
-												</Button>
-											) : (
-												<></>
-											)}
-
+												<li className="d-flex justify-content-between mt-4">
+													<span className="font-12 text-muted">
+														<i className="mdi mdi-account mr-1"></i>
+														{data.ownerName}
+													</span>
+													<span className="font-12 text-muted">
+														<i className="mdi mdi-timer mr-1"></i>
+														{format(new Date(data.createdAt), 'dd-MM-yyyy')}
+													</span>
+												</li>
+											</ul>
+										</div>
+										{data.ownerId === state.userData?.id ? (
 											<Button
 												disabled={isLoading}
-												color="success"
-												onClick={() => dispatch(push('/groups/' + data.id))}
+												className="mr-2"
+												color="info"
+												onClick={() => {
+													setGroupSelected(data.id);
+													toggleAddUser();
+												}}
 											>
-												<i className="mdi mdi-eye mr-1"></i>
-												Ver grupo
+												<i className="mdi mdi-plus mr-1"></i>
+												Agregar Usuarios
 											</Button>
-										</CardBody>
-									</Card>
-								</Col>
-							</Row>
+										) : (
+											<></>
+										)}
+
+										<Button
+											disabled={isLoading}
+											color="success"
+											onClick={() => dispatch(push('/groups/' + data.id))}
+										>
+											<i className="mdi mdi-eye mr-1"></i>
+											Ver grupo
+										</Button>
+									</CardBody>
+								</Card>
+							</Col>
 						);
 					})}
-				</>
+				</Row>
 			)}
 
 			<CreateGroupModal

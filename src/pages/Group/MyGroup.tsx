@@ -106,6 +106,31 @@ const MyGroup = () => {
 		}
 	};
 
+	const deleteTask = async (id: number) => {
+		try {
+			setIsLoading(true);
+			const { data } = await Axios.delete<ISuccessResponse<null>>(
+				'/task/' + id
+			);
+			setIsLoading(false);
+			reload();
+			dispatch(
+				SHOW_NOTIFICATION({
+					message: data.message,
+					type: 'success'
+				})
+			);
+		} catch (error) {
+			setIsLoading(false);
+			dispatch(
+				SHOW_NOTIFICATION({
+					message: error.response.data.message,
+					type: 'error'
+				})
+			);
+		}
+	};
+
 	return (
 		<>
 			{!isValidId ? (
@@ -383,23 +408,24 @@ const MyGroup = () => {
 																	></i>
 																</>
 															) : (
-																<></>
+																<>
+																	<UncontrolledTooltip
+																		placement="top"
+																		target={'deleteTaskTooltip' + value.id}
+																	>
+																		Eliminar tarea
+																	</UncontrolledTooltip>
+
+																	<i
+																		onClick={() => deleteTask(value.id)}
+																		id={'deleteTaskTooltip' + value.id}
+																		className="fa fa-trash text-danger mr-2"
+																		style={{
+																			cursor: 'pointer'
+																		}}
+																	></i>
+																</>
 															)}
-
-															<UncontrolledTooltip
-																placement="top"
-																target={'deleteTaskTooltip' + value.id}
-															>
-																Eliminar tarea
-															</UncontrolledTooltip>
-
-															<i
-																id={'deleteTaskTooltip' + value.id}
-																className="fa fa-trash text-danger mr-2"
-																style={{
-																	cursor: 'pointer'
-																}}
-															></i>
 
 															<UncontrolledTooltip
 																placement="top"
